@@ -1,0 +1,86 @@
+//2018.6.28
+#include <dht_nonblocking.h>
+#include <LiquidCrystal.h>
+#define DHT_SENSOR_TYPE DHT_TYPE_11
+//#define DHT_SENSOR_TYPE DHT_TYPE_21
+//#define DHT_SENSOR_TYPE DHT_TYPE_22
+#include <Wire.h>
+#include <RTClib.h>
+#include <LiquidCrystal.h>
+RTC_DS1307 rtc; // Create an instance of the RTC_DS1307 class
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // Initialize the LCD object with the appropriate pins
+static const int DHT_SENSOR_PIN = 8;
+DHT_nonblocking dht_sensor( DHT_SENSOR_PIN, DHT_SENSOR_TYPE );
+int motionSensorPin = 7; // The digital pin the motion sensor is connected to
+
+
+void setup() {
+  Serial.begin(9600); // Initialize the serial monitor
+  Wire.begin(); // Initialize the I2C communication
+  rtc.begin(); // Initialize the RTC module
+  lcd.begin(16, 2); // Initialize the LCD screen with 16 columns and 2 rows
+  pinMode(motionSensorPin, INPUT); // Set the motion sensor pin as an input
+  Serial.begin(9600); // Initialize the serial monitor
+}
+
+
+void loop( )
+{  
+  lcd.clear(); // Clear the LCD screen
+  lcd.setCursor(0, 0); // Set the cursor to the first column of the first row
+
+  DateTime now = rtc.now(); // Get the current time from the RTC module
+
+  lcd.print(now.month(), DEC); // Print the year
+  lcd.print('/');
+  lcd.print(now.day(), DEC); // Print the month
+  lcd.print('/');
+  lcd.print(now.year(), DEC); // Print the day
+  lcd.print(' ');
+  lcd.setCursor(0,1);
+  lcd.print(now.hour(), DEC); // Print the hour
+  lcd.print(':');
+  lcd.print(now.minute() + 2, DEC); // Print the minute
+
+  delay(60000); // Wait for 1 minute
+  lcd.clear();
+
+  
+  float temperature;
+  float humidity;
+
+  dht_sensor.measure(&temperature, &humidity);
+
+  lcd.print(temperature);
+    lcd.print(" deg. C");
+    delay(7500);
+    lcd.clear(); // Clear the LCD screen
+    lcd.print(humidity);
+    lcd.print("%");
+    delay(7500);
+    lcd.clear(); // Clear the LCD screed
+
+  String lineOne[5] = {"Dreams dont work", "Your only limit", "Good things",  "Mindset", "Don't"};
+  String lineTwo[5] = {"Unless YOU do", "is YOU", "will come", "is everything", "give up!"};
+  int randomNumber = (int)(rand() % 5);
+
+  lcd.print(lineOne[randomNumber]); // Print the first message on the first row
+  lcd.setCursor(0, 1); // Set the cursor to the first column of the second row
+  lcd.print(lineTwo[randomNumber]); // Print the second message on the second row
+  delay(15000); // Wait for 7.5 seconds
+  lcd.clear(); // Clear the LCD screen
+
+  int motion = digitalRead(motionSensorPin); // Read the motion sensor value
+  Serial.println(motion); // Print the motion sensor value to the serial monitor
+  delay(10000); // Wait for 1 second
+  if(motion == 1)
+  {
+
+  }
+  else
+  {
+    lcd.clear();
+    lcd.print("Get some food and water!");
+  }
+}
+
